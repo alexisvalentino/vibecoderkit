@@ -1,18 +1,23 @@
 {
-  "name": "ai-security-guardrails",
+  "name": "vibecoder-kit",
   "version": "1.0.0",
-  "description": "Enterprise-grade 5-layer AI security guardrail system to prevent AI coding assistants (Cursor, Copilot, Claude Code, Codex, Antigravity) from leaking secrets, touching .env files, or committing credentials.",
+  "description": "A portable product-building skill with optional AI coding security checks.",
   "type": "module",
-  "main": "scripts/check-secrets.mjs",
   "scripts": {
     "security:check": "node scripts/check-secrets.mjs",
     "security:setup": "git config core.hooksPath .githooks",
     "install:to": "node scripts/install-to.mjs",
-    "test": "node scripts/test-guardrails.mjs",
+    "test": "node scripts/test-security.mjs",
     "test:security": "node scripts/check-secrets.mjs"
   },
   "keywords": [
-    "ai-guardrails",
+    "vibecoder-kit",
+    "vibe-coding",
+    "agent-skill",
+    "product-quality",
+    "web-development",
+    "mobile-apps",
+    "accessibility",
     "security",
     "cursor",
     "copilot",
@@ -20,7 +25,6 @@
     "antigravity",
     "secret-detection",
     "pre-commit-hook",
-    "zero-leakage",
     "developer-security"
   ],
   "author": "Alexis Valentino",

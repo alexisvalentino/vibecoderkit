@@ -2,7 +2,7 @@
 
 /**
  * =============================================================================
- * AI Security Guardrails - Automated Self-Test Suite
+ * VibeCoder Kit - Security Check Self-Tests
  * =============================================================================
  * Verifies that the guardrail detection logic reliably catches secrets,
  * rejects forbidden files, detects .gitignore tampering, and permits safe templates.
@@ -31,7 +31,7 @@ function assert(condition, testName) {
 }
 
 console.log("\n====================================================");
-console.log("  Running AI Security Guardrails Test Suite         ");
+console.log("  Running VibeCoder Kit Security Self-Tests          ");
 console.log("====================================================\n");
 
 // -----------------------------------------------------------------------------
@@ -127,6 +127,17 @@ diff --git a/src/stripe.ts b/src/stripe.ts
     violations.some((v) => v.secretType === "Stripe Live Secret Key"),
     "Detects Stripe live secret key in added diff"
   );
+  assert(
+    !JSON.stringify(violations).includes(mockStripeKey),
+    "Does not return a detected secret in the scan result"
+  );
+
+  const sensitivePathDiff = fakeDiff.replaceAll("src/stripe.ts", ".env.local");
+  const pathViolations = scanDiffContent(sensitivePathDiff);
+  assert(
+    pathViolations[0]?.file === "[SENSITIVE FILE REDACTED]",
+    "Redacts sensitive filenames in scan results"
+  );
 }
 
 {
@@ -187,7 +198,7 @@ console.log("\nTest Group 4: Placeholder and Redaction Utilities");
   assert(isPlaceholder("your_openai_key"), "Recognizes 'your_' as placeholder");
   assert(isPlaceholder("dummy_token_123"), "Recognizes 'dummy_' as placeholder");
   assert(!isPlaceholder(testRealKey), "Distinguishes real key from placeholder");
-  assert(redactSecret(testRedactKey) === "sk_l...cdef", "Redacts secret with head and tail preserved");
+  assert(redactSecret(testRedactKey) === "[REDACTED]", "Fully redacts detected secrets");
 }
 
 // -----------------------------------------------------------------------------
@@ -200,6 +211,6 @@ console.log("----------------------------------------------------\n");
 if (failedCount > 0) {
   process.exit(1);
 } else {
-  console.log("🎉 All guardrail unit tests passed successfully!\n");
+  console.log("All VibeCoder Kit security self-tests passed.\n");
   process.exit(0);
 }

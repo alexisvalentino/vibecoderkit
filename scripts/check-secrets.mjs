@@ -2,14 +2,14 @@
 
 /**
  * =============================================================================
- * AI Security Guardrail: Pre-Commit Secrets & Staging Inspector
+ * VibeCoder Kit: Pre-Commit Secrets & Staging Inspector
  * =============================================================================
  * Cross-platform verification script that inspects git staging before any commit.
  *
- * Deterministic checks:
+ * Pattern-based checks:
  * 1. Blocks any staged file matching .env* (except .env.example)
  * 2. Blocks any staged private cryptographic keys (*.pem, *.key, etc.)
- * 3. Blocks tampering with .gitignore that would unignore .env*
+ * 3. Detects staged .gitignore changes that remove .env* protection
  * 4. Scans staged code diff additions for API keys, tokens, and credentials
  * =============================================================================
  */
@@ -146,9 +146,20 @@ export function isPlaceholder(val) {
 /**
  * Redact secret for safe display in console output.
  */
-export function redactSecret(secret) {
-  if (!secret || secret.length <= 8) return "[REDACTED]";
-  return `${secret.slice(0, 4)}...${secret.slice(-4)}`;
+export function redactSecret() {
+  return "[REDACTED]";
+}
+
+function displayFileName(filePath) {
+  const normalized = String(filePath).replace(/\\/g, "/");
+  const basename = path.posix.basename(normalized);
+  const sensitive =
+    basename === ".env" ||
+    (basename.startsWith(".env.") && basename !== ".env.example") ||
+    /\.(pem|key|keystore|jks|pfx|p12)$/i.test(basename) ||
+    ["id_rsa", "id_ed25519", "credentials.json"].includes(basename);
+
+  return sensitive ? "[SENSITIVE FILE REDACTED]" : normalized;
 }
 
 /**
@@ -264,7 +275,6 @@ export function scanDiffContent(diffText) {
   const lines = diffText.split("\n");
 
   let currentFile = "unknown";
-  let lineIndex = 0;
 
   for (const line of lines) {
     if (line.startsWith("diff --git")) {
@@ -282,13 +292,13 @@ export function scanDiffContent(diffText) {
     if (
       currentFile.endsWith(".env.example") ||
       currentFile.includes("check-secrets.mjs") ||
+      currentFile.includes("test-security.mjs") ||
       currentFile.includes("test-guardrails.mjs")
     ) {
       continue;
     }
 
     const addedLine = line.substring(1).replace(/\0/g, "").replace(/^\uFEFF/, "");
-    lineIndex++;
 
     for (const pattern of SECRET_PATTERNS) {
       const match = addedLine.match(pattern.regex);
@@ -300,11 +310,10 @@ export function scanDiffContent(diffText) {
 
         violations.push({
           type: "SECRET_PATTERN_DETECTED",
-          file: currentFile,
+          file: displayFileName(currentFile),
           secretType: pattern.name,
           preview: redactSecret(secretVal),
           severity: pattern.severity,
-          snippet: addedLine.trim().slice(0, 100),
         });
       }
     }
@@ -318,7 +327,7 @@ export function scanDiffContent(diffText) {
  */
 export async function runSecurityCheck() {
   console.log(`\n${colors.bold}${colors.cyan}====================================================${colors.reset}`);
-  console.log(`${colors.bold}${colors.cyan}  AI SECURITY GUARDRAIL: PRE-COMMIT SCANNER        ${colors.reset}`);
+  console.log(`${colors.bold}${colors.cyan}  VIBECODER KIT: PRE-COMMIT SECURITY CHECK         ${colors.reset}`);
   console.log(`${colors.bold}${colors.cyan}====================================================${colors.reset}\n`);
 
   let stagedFiles = [];
@@ -369,15 +378,16 @@ export async function runSecurityCheck() {
 
   // Report Results
   if (allViolations.length === 0) {
-    console.log(`\n${colors.bold}${colors.green}✔ PASSED: All staged files comply with AI zero-leakage security guardrails.${colors.reset}\n`);
+    console.log(`\n${colors.bold}${colors.green}✔ PASSED: No configured security patterns were found in the staged changes.${colors.reset}\n`);
     return 0;
   }
 
-  console.error(`\n${colors.bold}${colors.red}❌ COMMIT REJECTED: ${allViolations.length} Security Violation(s) Detected!${colors.reset}\n`);
+  console.error(`\n${colors.bold}${colors.red}❌ COMMIT BLOCKED: ${allViolations.length} security issue(s) found.${colors.reset}\n`);
 
   allViolations.forEach((v, idx) => {
+    const safeFile = displayFileName(v.file);
     console.error(
-      `${colors.bold}${colors.red}[Violation ${idx + 1}]${colors.reset} ${colors.yellow}${v.type}${colors.reset} in ${colors.cyan}${v.file}${colors.reset}`
+      `${colors.bold}${colors.red}[Issue ${idx + 1}]${colors.reset} ${colors.yellow}${v.type}${colors.reset} in ${colors.cyan}${safeFile}${colors.reset}`
     );
     if (v.secretType) {
       console.error(`  ${colors.bold}Type:${colors.reset}    ${v.secretType} [${v.severity}]`);
@@ -386,13 +396,10 @@ export async function runSecurityCheck() {
     if (v.message) {
       console.error(`  ${colors.bold}Details:${colors.reset} ${v.message}`);
     }
-    if (v.snippet) {
-      console.error(`  ${colors.bold}Line:${colors.reset}    ${colors.gray}${v.snippet}${colors.reset}`);
-    }
     console.error("");
   });
 
-  console.error(`${colors.bold}${colors.yellow}Remediation Instructions:${colors.reset}`);
+  console.error(`${colors.bold}${colors.yellow}Suggested next steps:${colors.reset}`);
   console.error(`1. Unstage sensitive files: ${colors.cyan}git restore --staged <filename>${colors.reset}`);
   console.error(`2. Place secrets in your private local ${colors.cyan}.env${colors.reset} file instead of code.`);
   console.error(`3. If adding a new variable, document its dummy schema in ${colors.cyan}.env.example${colors.reset}.`);

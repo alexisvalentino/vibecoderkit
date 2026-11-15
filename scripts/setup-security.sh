@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # =========================================================================
-# AI Security Guardrails - Bash Setup Script (macOS / Linux / WSL)
+# VibeCoder Kit - Bash Security Hook Setup (macOS / Linux / WSL)
 # Configures git to use .githooks directory for pre-commit protection
 # =========================================================================
 
@@ -9,7 +9,7 @@ set -e
 
 echo ""
 echo "===================================================="
-echo "  AI Security Guardrails: Local Setup (Bash)        "
+echo "  VibeCoder Kit: Security Hook Setup                "
 echo "===================================================="
 echo ""
 
@@ -33,7 +33,7 @@ git config core.hooksPath .githooks
 echo "✔ [3/3] Configured git core.hooksPath -> $(git config core.hooksPath)"
 
 echo ""
-echo "🎉 SUCCESS! AI Security Guardrails are active for this repository."
+echo "Security hook configured for this repository."
 echo "Git will automatically run pre-commit checks before every commit."
 echo "You can run manual checks at any time with: npm run security:check"
 echo ""

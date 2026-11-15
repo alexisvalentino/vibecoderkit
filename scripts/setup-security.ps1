@@ -1,5 +1,5 @@
 # =========================================================================
-# AI Security Guardrails - Windows PowerShell Setup Script
+# VibeCoder Kit - Windows PowerShell Security Hook Setup
 # Configures git to use .githooks directory for pre-commit protection
 # =========================================================================
 
@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "====================================================" -ForegroundColor Cyan
-Write-Host "  AI Security Guardrails: Local Setup (PowerShell) " -ForegroundColor Cyan
+Write-Host "  VibeCoder Kit: Security Hook Setup (PowerShell)" -ForegroundColor Cyan
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -39,7 +39,7 @@ try {
 }
 
 Write-Host ""
-Write-Host " SUCCESS! AI Security Guardrails are active for this repository." -ForegroundColor Green
+Write-Host " Security hook configured for this repository." -ForegroundColor Green
 Write-Host " Git will automatically run pre-commit checks before every commit."
 Write-Host " You can run manual checks at any time with: npm run security:check" -ForegroundColor Yellow
 Write-Host ""
