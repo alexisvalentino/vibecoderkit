@@ -1,293 +1,91 @@
-# AI Security Guardrails (Open Source Template)
+# VibeCoder Kit
 
-> **Enterprise-grade, 5-layer defense-in-depth security guardrails for developers using AI coding assistants (Cursor, Claude Code, GitHub Copilot, Codex, Windsurf, Aider, and Antigravity).**  
-> Prevent AI tools, indexers, and git commits from ever leaking, reading, indexing, or committing company tokens, private credentials, `.env` files, or protected git configurations.
+A portable agent skill and optional security toolkit for building and shipping websites and apps with care.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](package.json)
-[![Zero Leakage](https://img.shields.io/badge/Zero--Leakage-Enforced-success.svg)](#the-5-defense-layers-explained)
-[![Deterministic Hook](https://img.shields.io/badge/Pre--Commit-Deterministic-orange.svg)](#layer-5-deterministic-pre-commit-hook)
+VibeCoder Kit brings together two things:
 
----
+- **The product skill:** one self-contained guide to product-specific visual design, UX, accessibility, responsive behavior, privacy, security, discoverability, and release readiness.
+- **The security pack:** reusable AI instructions, editor exclusions, and an optional Git pre-commit scanner for common accidental secret leaks.
 
-## What Is This Project?
+Use the skill by itself, or clone this repository and install the security pack into a project. The security scanner is a pattern-based backstop; it cannot replace code review, secret management, or a security audit.
 
-This repository is **NOT** a web application firewall (WAF) or a web server attack protection tool.
+## Use it on every project
 
-Instead, this is a **Developer Machine & AI Assistant Security System**.
+Choose the setup that fits how you work.
 
-### Why Do You Need This?
-When using AI coding assistants with company codebases or personal projects:
-1. **Background Indexers** (Cursor, Copilot, Codex) automatically scan and embed your workspace into vector databases or remote context caches. If not explicitly excluded, they can vectorize your private `.env`, `.env.local`, and SSH/cryptographic keys.
-2. **Autonomous Agents** (Composer, Claude Code, Antigravity) will attempt to inspect `.env` files to "debug" connection issues, accidentally pasting company tokens into model prompt histories or code diffs.
-3. **Automated Edits** can remove or weaken `.gitignore` rules, staging sensitive files without the developer noticing.
-4. **Accidental Commits** push live Stripe keys, OpenAI tokens, AWS secrets, or private keys directly to GitHub.
+### Option 1: Give Claude a one-off prompt
 
-### The Solution
-A **5-layer defense-in-depth shield**: even if an AI assistant tries to access a secret, or hallucinates a hardcoded key, the guardrails block ingestion, mandate zero-touch behavior, and deterministically halt git commits before any secret leaves your workstation.
+Attach or paste the single self-contained [skill file](skills/vibecoder-kit/SKILL.md) into the conversation, then send:
 
----
+```text
+Use VibeCoder Kit for this project. Follow the attached skill where it fits the task. First inspect the existing project and understand its users, stack, and conventions. Then make the requested change with complete loading, empty, success, error, and recovery states where relevant. Check responsive behavior, accessibility, privacy, and security. Keep optional features and infrastructure out unless the project needs them. Use the project's existing verification tools and summarize what you checked and any remaining risks.
+```
 
-## Quickstart Guide
+### Option 2: Install it globally as a skill
 
-Choose how you want to use this repository:
+Copy the `skills/vibecoder-kit` folder into your agent's personal skills directory. It contains one self-contained `SKILL.md`. The current locations documented for [Claude Code](https://code.claude.com/docs/en/skills) and [Codex](https://developers.openai.com/api/reference/cli#use-the-cli-from-a-coding-agent) are:
 
-### Path A: Apply to an Existing Project (Recommended)
-You can automatically copy and activate all 5 layers into your existing project in **one command**:
+| Agent | Personal skills folder | Available in |
+| --- | --- | --- |
+| Claude Code | `~/.claude/skills/vibecoder-kit/` | Local Claude Code projects on this machine |
+| Codex | `~/.agents/skills/vibecoder-kit/` | Projects on this machine |
+
+This global copy includes the complete checklist and secret-handling guidance. It does not install project-specific ignore files or enable a Git hook; use Option 3 for those integrations.
+
+On Windows, `~` means your user profile folder (for example, `C:\Users\your-name\.claude\skills\vibecoder-kit\` or `C:\Users\your-name\.agents\skills\vibecoder-kit\`). Create the parent skills directory if needed, then start or reload the agent. In Claude Code, invoke it with `/vibecoder-kit` or let Claude select it when relevant. Claude.ai/Cowork and cloud sessions use account or workspace skill settings rather than your local Claude Code folder.
+
+### Option 3: Install it in one project
+
+Clone this repository and run the installer from its folder:
 
 ```bash
-# 1. Clone this repository
-git clone https://github.com/alexisvalentino/guardrails.git
-cd guardrails
-
-# 2. Run the automated installer pointing to your project directory:
-node scripts/install-to.mjs ../my-existing-project
+git clone <repository-url> vibecoder-kit
+cd vibecoder-kit
+node scripts/install-to.mjs ../your-project
 ```
 
-What the installer does automatically:
-- Copies all exclusion files (`.cursorignore`, `.copilotignore`)
-- Copies all AI rule files (`AGENTS.md`, `.cursorrules`, `.cursor/rules/`, `CLAUDE.md`, `.agents/`)
-- Safeguards `.gitignore` to ensure `.env*` is protected
-- Installs the pre-commit hook and scripts into your project
-- Activates `git config core.hooksPath .githooks` in your project
+The installer copies the single VibeCoder Kit skill into `skills/`, `.agents/skills/`, and `.claude/skills/`, plus the security rules and scanner integrations, only when destination files are missing. It reports conflicts, preserves existing files, and merges missing security commands into `package.json`. It no longer installs the separate legacy `agent-security` skill because its guidance is included in VibeCoder Kit. Existing copies in a project are left untouched.
 
----
+The complete guidance is in [skills/vibecoder-kit/SKILL.md](skills/vibecoder-kit/SKILL.md).
 
-### Path B: Use as a New Project Template
-Click **Use this template** on GitHub or clone directly:
-```bash
-git clone https://github.com/alexisvalentino/guardrails.git my-app
-cd my-app
+Review the installed files. If you want the pre-commit scanner, run `npm run security:setup` from the target project. The installer does not configure hooks automatically, access or change `.gitignore`, or copy environment files. Add a project-specific `.env.example` schema and `.gitignore` patterns yourself when needed.
 
-# Activate the pre-commit hook
-npm run security:setup
-```
+## Five security layers
 
----
+The security pack keeps the original five layers:
 
-### Path C: Just Copy the Universal AI Prompt
-If you only want the AI behavioral instructions to paste into your AI tool's **System Prompt** or **Custom Instructions**, copy this:
+1. **Context exclusions:** `.cursorignore` and `.copilotignore` reduce indexing of local secrets in tools that honor them.
+2. **Agent rules:** `AGENTS.md`, `CLAUDE.md`, Cursor rules, and `.agents/` instructions tell supported agents how to handle credentials.
+3. **Safe configuration schema:** `.env.example` can document variable names with placeholders, never real credentials.
+4. **Git ignore protection:** the repository's existing `.gitignore` patterns keep sensitive files out of normal Git staging.
+5. **Pre-commit checks:** the hook checks staged filenames and common credential patterns.
 
-> [!TIP]
-> ### Copy-Paste Prompt for AI Assistants (Cursor / Claude / Copilot / ChatGPT)
-> ```text
-> CRITICAL SECURITY MANDATE:
-> 1. You operate under a ZERO-TRUST, ZERO-LEAKAGE security policy.
-> 2. NEVER read, search, grep, edit, display, or stage any file matching `.env*` (including `.env`, `.env.local`, `.env.production`). The ONLY exception is `.env.example` for variable schemas.
-> 3. NEVER execute shell commands that print `.env` contents (e.g. cat .env, printenv, Get-Content .env).
-> 4. NEVER edit or weaken `.gitignore`.
-> 5. NEVER hardcode real API keys, company tokens, or credentials in code or tests. Always use process.env.<VAR> (or runtime equivalent) and safe dummy placeholders (e.g. 'your_api_key_here').
-> 6. When a new environment variable is needed, add its key with a dummy placeholder to `.env.example` and instruct the user to configure their local private `.env` file.
-> ```
+These layers serve different purposes. Instructions and editor exclusions are tool-dependent, `.gitignore` does not prevent reading a file, and the scanner is pattern-based. They reduce exposure and accidental commits; they are not a hard OS-level access barrier or a security certification.
 
----
 
-## How to Properly Use This (Daily Developer Workflow)
+## Development
 
-How does a developer work safely with AI using these guardrails? Here is the exact daily workflow:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Dev as Developer
-    participant AI as AI Assistant (Cursor/Claude/Copilot)
-    participant Tpl as .env.example
-    participant Priv as .env.local (Private)
-    participant Code as Source Code
-    participant Git as Pre-Commit Hook
-
-    Dev->>AI: "Add Stripe billing integration"
-    Note over AI: AI reads .env.example only.<br/>Blocked from accessing .env.local!
-    AI->>Tpl: Adds STRIPE_SECRET_KEY=your_key_here
-    AI->>Code: Writes `process.env.STRIPE_SECRET_KEY`
-    AI-->>Dev: "Added schema to .env.example. Please add your key to .env.local"
-    Dev->>Priv: Pastes real sk_live_... into private .env.local
-    Dev->>Git: Runs `git commit`
-    Git->>Git: Scans staged files and diffs
-    Note over Git: Deterministically verifies:<br/>1. No .env files staged<br/>2. No secrets in code diffs<br/>3. .gitignore not tampered
-    Git-->>Dev: Commit Accepted (Clean)
-```
-
-### 1. Adding a New Service or Integration
-When you need to add an API key (e.g., Stripe, OpenAI, Supabase):
-- **Tell the AI**: *"I need to integrate Stripe. Add the required environment variable keys to `.env.example` with dummy values, and use `process.env.STRIPE_SECRET_KEY` in the code."*
-- **The AI will**:
-  1. Add `STRIPE_SECRET_KEY=your_stripe_secret_key_here` to [`.env.example`](file:///.env.example).
-  2. Write code that cleanly loads `process.env.STRIPE_SECRET_KEY`.
-  3. Tell you: *"I have updated `.env.example`. Please add your real key to your local `.env` file."*
-- **You (the human)**:
-  - Copy the key name into your private local `.env` or `.env.local`.
-  - The AI assistant **never** sees or touches your actual secret!
-
-### 2. What Happens During Git Commit?
-Every time you or an AI agent runs `git commit`:
-- The pre-commit hook runs [`scripts/check-secrets.mjs`](file:///scripts/check-secrets.mjs).
-- If clean, the commit succeeds in under 150ms:
-  ```text
-  [AI Guardrail] Running Pre-Commit Checks...
-  [PASS] No files staged for commit. Staging is clean.
-  ```
-
----
-
-## What Happens If Something Goes Wrong?
-
-Here is how the guardrail deterministically stops accidental leaks before they happen:
-
-### Scenario 1: AI or Developer Attempts to Stage `.env`
-If someone accidentally runs `git add .` while a `.env` file is present:
-```text
-====================================================
-  AI SECURITY GUARDRAIL: PRE-COMMIT SCANNER        
-====================================================
-
-Inspecting 3 staged file(s)...
-
-COMMIT REJECTED: 1 Security Violation(s) Detected!
-
-[Violation 1] STAGED_ENV_FILE in .env
-  Details: Attempted to commit an environment file (.env). Only .env.example is permitted in version control.
-
-Remediation Instructions:
-1. Unstage sensitive files: git restore --staged <filename>
-2. Place secrets in your private local .env file instead of code.
-3. If adding a new variable, document its dummy schema in .env.example.
-4. Re-run npm run security:check before committing.
-
-Pre-commit check failed. Git commit aborted by AI Security Guardrails.
-```
-> **Fix in 5 seconds**: Run `git restore --staged .env` and commit again.
-
----
-
-### Scenario 2: AI Assistant Hardcodes a Live Secret in Code
-If an AI assistant accidentally generates code with a live Stripe key, AWS token, or private key:
-```text
-COMMIT REJECTED: 1 Security Violation(s) Detected!
-
-[Violation 1] SECRET_PATTERN_DETECTED in src/billing.ts
-  Type:    Stripe Live Secret Key [CRITICAL]
-  Secret:  sk_l...4a8b
-  Line:    const client = new Stripe("sk_live_placeholder_key_99482");
-
-Remediation Instructions:
-1. Replace hardcoded secret with process.env.STRIPE_SECRET_KEY
-2. Re-run npm run security:check before committing.
-```
-> **Fix in 5 seconds**: Change the hardcoded string to `process.env.STRIPE_SECRET_KEY` and place the value in your local `.env`.
-
----
-
-### Scenario 3: AI Modifies `.gitignore` to Unignore `.env`
-If an automated agent edits `.gitignore` and accidentally deletes `.env*`:
-```text
-COMMIT REJECTED: 1 Security Violation(s) Detected!
-
-[Violation 1] GITIGNORE_TAMPERING in .gitignore
-  Details: Detected removal of environment protection pattern '.env*' from .gitignore!
-```
-> **Fix in 5 seconds**: Run `git checkout .gitignore` to revert unwanted modifications.
-
----
-
-## The 5 Defense Layers Explained
-
-```mermaid
-flowchart TD
-    subgraph L1["Layer 1: Indexing Exclusions"]
-        A[".cursorignore"]
-        B[".copilotignore"]
-    end
-
-    subgraph L2["Layer 2: AI Multi-Harness Rules"]
-        C["AGENTS.md"]
-        D[".cursorrules & .cursor/rules/"]
-        E["CLAUDE.md"]
-        F[".agents/rules & skills"]
-    end
-
-    subgraph L3["Layer 3: Safe Template"]
-        G[".env.example"]
-    end
-
-    subgraph L4["Layer 4: Protected .gitignore"]
-        H[".gitignore Anti-Tamper"]
-    end
-
-    subgraph L5["Layer 5: Deterministic Hook"]
-        I[".githooks/pre-commit"]
-        J["check-secrets.mjs"]
-    end
-
-    DEV[Developer / AI Tool] --> L1
-    L1 --> L2 --> L3 --> L4 --> L5 --> CLEAN["Zero Leaks to Remote"]
-```
-
-| Layer | Files | How It Protects You |
-| :--- | :--- | :--- |
-| **Layer 1: Indexing Exclusions** | [`.cursorignore`](file:///.cursorignore), [`.copilotignore`](file:///.copilotignore) | Excludes `.env*`, `.git/`, `.gitignore`, and private keys (`*.pem`, `*.key`, `id_rsa`) from local and remote vector embeddings. |
-| **Layer 2: Multi-Harness Rules** | [`AGENTS.md`](file:///AGENTS.md), [`.cursorrules`](file:///.cursorrules), [`.cursor/rules/*.mdc`](file:///.cursor/rules/security-and-secrets.mdc), [`CLAUDE.md`](file:///CLAUDE.md), [`.agents/`](file:///.agents/) | Gives every AI tool (Cursor, Claude Code, Copilot, Antigravity) explicit system-level instructions prohibiting secret inspection. |
-| **Layer 3: Safe Template** | [`.env.example`](file:///.env.example) | Public dummy schema showing required configuration without revealing values. |
-| **Layer 4: Protected Gitignore** | [`.gitignore`](file:///.gitignore) | Protective warning header and strict ignore patterns for environment files and keys. |
-| **Layer 5: Deterministic Hook** | [`scripts/check-secrets.mjs`](file:///scripts/check-secrets.mjs), [`.githooks/pre-commit`](file:///.githooks/pre-commit) | Cross-platform Node script (0 external dependencies) verifying staging before any commit. |
-
----
-
-## Supported AI Coding Assistants
-
-| Assistant | Config File | How Protection Works |
-| :--- | :--- | :--- |
-| **Cursor** (Composer & Chat) | `.cursorignore`, `.cursorrules`, `.cursor/rules/*.mdc` | Ignored from indexing; MDC rule injected on every query. |
-| **GitHub Copilot & Codex** | `.copilotignore`, `AGENTS.md` | Ignored from workspace embeddings and completions. |
-| **Anthropic Claude Code** | `CLAUDE.md`, `AGENTS.md` | Explicit constraints on CLI bash commands and file reading. |
-| **Google Antigravity & Gemini** | `.agents/rules/*.md`, `.agents/skills/*.md` | `always_on` system rule and progressive `agent-security` skill. |
-| **Windsurf / Cascade** | `AGENTS.md`, `.gitignore` | Universal agent mandates and gitignore exclusions. |
-| **Aider & Custom LLMs** | `AGENTS.md`, `.env.example` | Root instruction file and safe schema reference. |
-| **Git Pre-Commit** | `.githooks/pre-commit`, `check-secrets.mjs` | Deterministic local roadblock for all tools and users. |
-
----
-
-## Supported Programming Languages
-
-While the pre-commit script runs via Node.js (Node 18+), the guardrails protect **ANY** programming language and framework:
-
-- **TypeScript / JavaScript** (Next.js, Vite, Node, Express, Nest) &mdash; uses `process.env.<VAR>`
-- **Python** (FastAPI, Django, Flask) &mdash; uses `os.environ.get("<VAR>")`
-- **Go** (Gin, Fiber, Standard Library) &mdash; uses `os.Getenv("<VAR>")`
-- **Rust** (Axum, Actix) &mdash; uses `std::env::var("<VAR>")`
-- **PHP** (Laravel, Symfony) &mdash; uses `env('<VAR>')`
-- **Ruby** (Rails) &mdash; uses `ENV['<VAR>']`
-
----
-
-## Testing & Verification
-
-Verify your guardrail system at any time:
+Requires Node.js 18 or newer.
 
 ```bash
-# 1. Run the built-in self-test suite (15 unit tests)
 npm test
-
-# 2. Check your current git staging status
-npm run security:check
-
-# 3. Test the pre-commit blocker in real-time
-echo "SECRET=123" > .env
-git add -f .env
-git commit -m "test commit"
-# BLOCKED: Commit aborted by AI Security Guardrails
-
-# Clean up test
-git restore --staged .env
-rm .env
 ```
 
----
+To enable the Git hook in this checkout, run `npm run security:setup`. This changes the local Git `core.hooksPath` setting, so run it only when you want the hook active.
+
+## Project contents
+
+```text
+skills/vibecoder-kit/  Single self-contained product-building skill
+scripts/               Installer, security scanner, setup scripts, and self-tests
+.githooks/             Optional pre-commit hook
+.cursor/               Cursor security rule
+.agents/               Always-on security rule and legacy security skill (not copied to new projects)
+images/                Original checklist screenshots used to build the guide
+```
+
+The root `AGENTS.md`, `CLAUDE.md`, Cursor files, and ignore files are tool-specific security integrations. Keep the ones relevant to your workflow; you do not need every integration enabled.
 
 ## License
 
-Open-sourced under the [MIT License](LICENSE). Free for personal, commercial, and enterprise use.
-
-## Contributing
-
-Contributions, feedback, and additional secret detection patterns are warmly welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Released under the [MIT License](LICENSE).

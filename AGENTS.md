@@ -53,3 +53,7 @@
 
 - Every pre-commit hook runs [`scripts/check-secrets.mjs`](file:///scripts/check-secrets.mjs).
 - Any attempt to stage `.env` files, weaken `.gitignore`, or introduce credential patterns will deterministically halt commits.
+
+## Product-Building Guidance
+
+For website or app work in this repository, also follow [`skills/vibecoder-kit/SKILL.md`](skills/vibecoder-kit/SKILL.md) and its product-quality checklist. The security mandates above remain in force.
