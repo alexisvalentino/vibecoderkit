@@ -108,9 +108,18 @@ Use these ideas to shape and evaluate a flow, not as rigid laws:
 
 ## Performance, reliability, and operations
 
-- [ ] Handle network failures, timeouts, retries, and cancellation. Retry automatically only when the operation is safe or protected by idempotency.
-- [ ] Paginate large result sets; use caching, compression, indexes, and query tuning when measurement shows a need.
-- [ ] Set sensible request, upload, rate, and third-party spending limits. Test simultaneous actions on important flows.
+Apply these checks to the actual architecture and expected workload. No checklist can guarantee capacity for a particular number of users.
+
+- [ ] For production account, recovery, or notification email, configure a suitable transactional email provider and appropriate domain authentication. Verify delivery, bounce/suppression handling, provider quotas, and failure recovery; do not simulate successful delivery.
+- [ ] Handle network failures, timeouts, retries, and cancellation. For AI and other third-party calls, use bounded exponential backoff with jitter only for retryable failures; cap attempts and spending, and keep retries idempotent.
+- [ ] Design indexes from real filter, search, join, and sort patterns. Inspect query plans and query counts to find missing indexes, N+1 queries, and avoidable full scans; batch or eager-load related data when measurement supports it.
+- [ ] When row-level security (RLS) is used, test policy performance with realistic roles and data volumes. Optimize policy expressions and supporting indexes without weakening authorization.
+- [ ] Keep database connection usage within service and provider limits. Use a compatible connection pooler when serverless concurrency or application topology warrants it, and verify transaction and session semantics.
+- [ ] Paginate or otherwise bound large or unbounded result sets with deterministic ordering. Do not add pagination to small fixed lists without a user or performance need.
+- [ ] Cache repeated expensive work when measurement justifies it; define cache keys, expiration, invalidation, and per-user authorization behavior so cached data is not leaked or kept stale beyond product requirements.
+- [ ] Move genuinely slow or failure-prone work to background jobs or queues when request-path execution hurts reliability. Provide status and failure visibility, idempotent processing, bounded retries, and a recovery or dead-letter path.
+- [ ] Set sensible request, upload, concurrency, and rate limits. For realtime features, check provider and application limits on connections, channels, and message throughput; test expected fan-out, reconnects, backpressure, and degraded behavior.
+- [ ] Derive load targets from expected traffic and business risk, then safely load-test critical flows before high-risk launches. Measure throughput, tail latency, errors, and resource saturation rather than assuming a fixed number of users is safe.
 - [ ] Capture useful errors and operational logs while redacting secrets and personal data. Add health checks, monitoring, and actionable alerts for production services.
 - [ ] Test backup restoration and document recovery/rollback steps for stateful or high-impact releases.
 - [ ] Plan database migrations so deploys can recover safely. Use staged rollout, feature flags, or rollback mechanisms when the service's risk warrants them.
