@@ -30,6 +30,7 @@
 *.jks
 *.pfx
 *.p12
+*.p8
 *.cer
 *.crt
 *.der
@@ -38,7 +39,16 @@ id_rsa.pub
 id_ed25519
 id_ed25519.pub
 keystore.properties
+key.properties
 local.properties
+
+# Additional credential and private-key filenames
+.secret
+.secrets
+*.secret
+*.secrets
+*.credentials
+*.credentials.json
 
 # -------------------------------------------------------------------------
 # Cloud Credentials & CLI Tokens
@@ -50,6 +60,11 @@ credentials.json
 client_secret*.json
 service-account*.json
 *.publishsettings
+secret.json
+secrets.json
+/secret/
+/secrets/
+/credentials/
 
 # -------------------------------------------------------------------------
 # Dependencies & Package Managers
