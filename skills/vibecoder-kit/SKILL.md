@@ -9,7 +9,7 @@ Use this skill to help build a complete, usable product rather than only a worki
 
 ## Workflow
 
-1. Understand the main users, task, target platform, and acceptance criteria. Inspect the relevant screens, flows, and existing conventions before editing.
+1. Understand the main users, task, target surface(s), supported operating systems and device form factors, and acceptance criteria. Inspect the relevant screens, flows, platform configuration, and existing conventions before editing. Identify whether the product is a website, web app/PWA, mobile app (including Capacitor or Expo), desktop app (including Electron), or a combination; the framework alone does not determine the right platform behavior.
 2. Plan a small set of changes around the primary task. Keep hierarchy, navigation, labels, and calls to action clear. Use familiar patterns, reduce avoidable choices, group related information, and make feedback visible.
 3. Implement complete flows. Account for loading, empty, success, error, disabled, offline, and recovery states where they apply. Prevent duplicate or destructive actions when data or money is involved.
 4. Treat accessibility, privacy, and security as part of the design. Check keyboard and touch use, focus, contrast, image alternatives, safe data handling, and server-side authorization as relevant.
@@ -71,6 +71,35 @@ Use these ideas to shape and evaluate a flow, not as rigid laws:
 - [ ] Optimize responsive images and other assets without harming quality. Check real loading behavior on constrained connections.
 - [ ] Add analytics or campaign tracking only for a defined purpose, and respect applicable consent and privacy choices.
 - [ ] Include accurate contact, support, location/directions, or trust information when users need it. Reviews and testimonials must be genuine and authorized.
+
+## Platform behavior and device coverage
+
+Choose checks from the product's actual targets. A shared codebase can still need different interaction patterns on the web, mobile, and desktop. Preserve each platform's expected behavior instead of merely shrinking or wrapping a web layout. Do not make a PWA, add native integrations, or support extra operating systems unless they fit the product and requested scope.
+
+### Native mobile: iOS and Android
+
+- [ ] Identify the supported OS versions and device families. Cover compact and large phones, tablets (including iPad), and foldable or dual-screen devices when they are in scope.
+- [ ] Adapt layouts to available space, orientation, split-screen or multitasking, safe areas, system bars, and camera/sensor cutouts. On tablets and foldables, use the extra space deliberately rather than stretching a phone layout.
+- [ ] Use expected platform navigation and controls, including iOS back/navigation and Android system back behavior. Check gestures, status/navigation bars, keyboard and autofill overlap, rotation, app background/resume, and interrupted flows.
+- [ ] Check touch targets, system text scaling, VoiceOver/TalkBack labels and focus, reduced motion, light/dark appearance when supported, and hardware keyboards where relevant.
+- [ ] For Capacitor and Expo apps, verify that web-based screens and native plugins behave correctly on both platforms, including permission prompts, deep links, notifications, file/photo selection, and offline/reconnect behavior when those features are used.
+- [ ] Exercise representative critical flows on iOS and Android simulators/emulators and, for release-critical device behavior, real devices where available. Record any device or OS coverage that could not be checked.
+
+### Desktop apps: Electron and other desktop shells
+
+- [ ] Identify the supported desktop operating systems and adapt window layout to resizing, minimum sizes, high-DPI displays, and multiple windows when the product uses them.
+- [ ] Check expected desktop behavior: keyboard and menu navigation, shortcuts, focus, native dialogs and file selection, clipboard, notifications, and window controls where used.
+- [ ] Preserve desktop accessibility, including keyboard-only use, screen-reader names, text scaling, and visible focus. Avoid mobile-only interaction assumptions for pointer and keyboard users.
+- [ ] For Electron, keep privileged operations behind the narrowest suitable main/preload boundary, validate renderer-to-main messages, and avoid exposing Node or broad operating-system access to untrusted content.
+- [ ] Exercise the packaged app on each supported OS, or state which OS-specific behavior remains unverified. Check install, launch, update, and recovery paths when they are part of the release.
+
+### Web apps and Progressive Web Apps
+
+- [ ] Make standard web experiences responsive and usable across supported viewport sizes, input methods, browser zoom, and orientation where relevant.
+- [ ] Decide whether installability or offline use benefits the product. A landing page or ordinary web app does not need PWA behavior by default.
+- [ ] When a PWA is in scope, verify its manifest, icons, secure-context requirements, install experience, standalone display, launch routing, and update behavior. Add offline caching only for content and actions with a clear offline and freshness policy.
+- [ ] Test network loss, restoration, stale cached data, and failed writes where offline behavior is offered. Make queued or unsaved work and sync status understandable; do not imply that a write succeeded before it is safely stored.
+- [ ] Check the installed experience on representative iOS and Android browsers/devices when those are supported; browser PWA capabilities differ, so do not assume feature parity.
 
 ## Native app and store preparation
 
