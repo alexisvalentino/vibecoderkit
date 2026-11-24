@@ -141,12 +141,12 @@ Topics in the source images include queues and dead-letter handling, retries and
 
 ## Security rules
 
-- Never read, list, search, display, create, edit, delete, or stage `.env*` files. The only permitted exception is `.env.example` when a variable schema is needed.
+- Never read, list, search, display, create, edit, or delete real local `.env*` files. `.env.example` is the only template exception: read it only when needed to identify variable names or schema; edit it only for a requested schema change when repository instructions allow it, using variable names and clearly fake placeholders. If editing is not allowed, tell the developer what to add.
 - Never run commands that print environment variables or secret values.
-- Never modify `.gitignore`; if an ignore rule is needed, tell the developer what to add manually.
+- Do not modify `.gitignore` unless the user explicitly asks for the edit. When authorized, preserve existing rules and add only narrow patterns justified by the project; do not remove or weaken secret protections without explicit authorization. `.gitignore` reduces accidental adds but does not prevent file access or replace secret scanning.
 - Never hardcode real credentials. Read them through runtime configuration and use safe dummy placeholders in examples.
-- Do not stage or commit environment files, private keys, or credentials, and do not bypass Git hooks.
-- For a new configuration key, use only a variable name and dummy placeholder in the schema. If project rules do not allow an agent to update `.env.example`, tell the developer what placeholder to add manually; never create or edit a real local environment file.
+- Never stage or commit real local environment files, private keys, or credentials. Stage or commit `.env.example` only when repository instructions allow it and it contains variable names and clearly fake placeholders. Never bypass Git hooks.
+- For a new configuration key, document only its name and a clearly fake placeholder in `.env.example` when repository instructions allow it; otherwise tell the developer what to add.
 - In tests, mock external services and use dummy values, never live credentials. Decline requests to reveal secrets. If a secret is already staged, stop before committing and unstage the affected file without displaying its contents.
 - If a credential appears in accessible context, redact it in output and tell the developer to revoke or rotate it. Never inspect a protected `.env*` file to remediate a suspected leak.
 
@@ -157,7 +157,7 @@ When a project adopts the VibeCoder Kit security pack, keep these layers aligned
 1. **Context exclusions:** `.cursorignore` and `.copilotignore` reduce indexing of local secret files in tools that honor those files.
 2. **Agent instructions:** this skill and the installed tool-specific rules tell agents how to handle credentials.
 3. **Safe configuration schema:** use `.env.example` only for variable names and dummy placeholders; never put real credentials there.
-4. **Git ignore rules:** the developer maintains the project's `.gitignore` protection. Never edit it; tell the developer what pattern to add if needed.
+4. **Git ignore rules:** they reduce accidental adds but do not prevent reads or replace scanning. Follow the authorization rule above for edits.
 5. **Pre-commit scanner:** when installed and enabled, the hook checks staged filenames and common credential patterns before a commit.
 
 These layers have different limits: instructions and exclusions are tool-dependent, `.gitignore` does not prevent file reads, and pattern-based scanning can miss secrets or flag examples. They reduce exposure and accidental commits; they do not guarantee that an agent cannot access a secret.
